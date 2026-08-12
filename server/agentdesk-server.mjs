@@ -73,7 +73,7 @@ async function currentState() {
     capabilities: {
       workspaceRoot: root,
       artifactDir,
-      runners: ["workspace-audit", "typecheck"]
+      runners: ["workspace-audit", "typecheck", "codex"]
     }
   };
 }
@@ -86,7 +86,7 @@ async function createRun(body) {
     throw new Error("A run needs an objective.");
   }
 
-  if (!["workspace-audit", "typecheck"].includes(runner)) {
+  if (!["workspace-audit", "typecheck", "codex"].includes(runner)) {
     throw new Error(`Unsupported runner: ${runner}`);
   }
 
@@ -129,10 +129,15 @@ async function executeRun(runId) {
       sections.push(await runPnpm(["run", "typecheck"]));
     }
 
+    if (run.runner === "codex") {
+      sections.push("## Codex");
+      sections.push(await runCommand(resolveCodexCommand(), ["exec", run.objective]));
+    }
+
     sections.push("## Suggested next actions");
     sections.push("- Turn repeated actions into named runners.");
     sections.push("- Add an approval queue before runners that modify files.");
-    sections.push("- Add a Codex adapter once the local Codex executable is callable from the runtime.");
+    sections.push("- Promote useful commands into one-click agent shortcuts.");
 
     const filename = `${run.id}-${slugify(run.objective)}.md`;
     await writeFile(join(artifactDir, filename), sections.join("\n"), "utf8");
@@ -157,6 +162,10 @@ async function executeRun(runId) {
     run.updatedAt = new Date().toISOString();
     await saveState();
   }
+}
+
+function resolveCodexCommand() {
+  return process.platform === "win32" ? "codex.cmd" : "codex";
 }
 
 async function runPnpm(args) {
