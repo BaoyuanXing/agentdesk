@@ -24,6 +24,10 @@ button {
   font: inherit;
 }
 
+a {
+  text-decoration: none;
+}
+
 .desktop {
   min-height: 100vh;
   background:
@@ -155,6 +159,7 @@ button {
 
 .window-actions button:hover,
 .taskbar button:hover,
+.run-form button:hover,
 .artifact-row:hover {
   background: rgba(255, 255, 255, 0.16);
 }
@@ -185,8 +190,11 @@ button {
 
 .metric-card,
 .prompt-box,
+.runtime-card,
 .agent-card,
-.task-card {
+.task-card,
+.run-card,
+.empty-state {
   background: rgba(255, 255, 255, 0.075);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -221,6 +229,30 @@ button {
   padding: 14px;
 }
 
+.runtime-card {
+  margin-top: 12px;
+  padding: 14px;
+}
+
+.runtime-card span {
+  color: #eef3f8;
+  display: block;
+  font-weight: 800;
+}
+
+.runtime-card p {
+  color: #a8b4c3;
+  margin: 6px 0 0;
+}
+
+.runtime-card.is-online {
+  border-color: rgba(69, 196, 176, 0.45);
+}
+
+.runtime-card.is-offline {
+  border-color: rgba(232, 117, 160, 0.52);
+}
+
 .timeline {
   display: grid;
   gap: 8px;
@@ -235,6 +267,7 @@ button {
 }
 
 .agent-list,
+.run-list,
 .workflow-board,
 .artifact-list {
   display: grid;
@@ -242,8 +275,28 @@ button {
 }
 
 .agent-card,
-.task-card {
+.task-card,
+.run-card,
+.empty-state {
   padding: 14px;
+}
+
+.run-card-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.run-card-header em {
+  color: #a8b4c3;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.run-card strong {
+  display: block;
+  line-height: 1.28;
 }
 
 .agent-heading {
@@ -304,6 +357,10 @@ button {
   background: #a8b4c3;
 }
 
+.task-status.failed {
+  background: #e875a0;
+}
+
 .artifact-row {
   align-items: center;
   background: rgba(255, 255, 255, 0.075);
@@ -317,6 +374,66 @@ button {
   min-height: 54px;
   padding: 10px 12px;
   text-align: left;
+}
+
+.run-form {
+  display: grid;
+  gap: 14px;
+}
+
+.run-form label {
+  color: #a8b4c3;
+  display: grid;
+  font-size: 12px;
+  font-weight: 750;
+  gap: 8px;
+  letter-spacing: 0;
+}
+
+.run-form textarea,
+.run-form select {
+  background: rgba(5, 10, 18, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #eef3f8;
+  font: inherit;
+  line-height: 1.45;
+  outline: 0;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.run-form textarea:focus,
+.run-form select:focus {
+  border-color: #7c9cff;
+  box-shadow: 0 0 0 3px rgba(124, 156, 255, 0.18);
+}
+
+.run-form button {
+  background: #7c9cff;
+  border-radius: 8px;
+  color: #08111f;
+  cursor: pointer;
+  font-weight: 850;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.run-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.fine-print,
+.empty-state p {
+  color: #a8b4c3;
+  font-size: 13px;
+  margin: 0;
+}
+
+.empty-state strong {
+  display: block;
+  margin-bottom: 6px;
 }
 
 .artifact-row span,
