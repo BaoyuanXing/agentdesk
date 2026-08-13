@@ -1,6 +1,6 @@
 :root {
   color: #eef3f8;
-  background: #111827;
+  background: #10141d;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -25,6 +25,15 @@ input {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 a {
   color: #7c9cff;
   text-decoration: none;
@@ -39,8 +48,8 @@ a {
 
 .desktop-field {
   background:
-    linear-gradient(145deg, rgba(42, 81, 92, 0.68), rgba(17, 24, 39, 0.42) 48%),
-    radial-gradient(circle at 76% 22%, rgba(248, 184, 78, 0.2), transparent 30%),
+    linear-gradient(145deg, rgba(42, 81, 92, 0.7), rgba(17, 24, 39, 0.48) 48%),
+    radial-gradient(circle at 76% 22%, rgba(248, 184, 78, 0.18), transparent 30%),
     #111827;
   inset: 0;
   position: fixed;
@@ -53,112 +62,197 @@ a {
   background-size: 34px 34px;
   content: "";
   inset: 0;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.56), transparent 90%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), transparent 92%);
   position: absolute;
 }
 
-.agent-orb {
+.desk-toolbar {
   align-items: center;
   background: rgba(12, 18, 28, 0.78);
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  bottom: 28px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
-  color: #eef3f8;
-  cursor: pointer;
-  display: inline-flex;
-  gap: 12px;
-  min-height: 58px;
-  padding: 10px 13px;
+  display: flex;
+  gap: 10px;
+  left: 18px;
+  min-height: 54px;
+  padding: 8px 10px 8px 14px;
   position: fixed;
-  right: 28px;
+  right: 18px;
+  top: 16px;
+  z-index: 50;
 }
 
-.orb-core,
-.agent-badge {
+.desk-toolbar div {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.desk-toolbar strong {
+  font-size: 15px;
+}
+
+.desk-toolbar span {
+  color: #a8b4c3;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desk-toolbar button,
+.box-actions button,
+.terminal-titlebar button,
+.terminal-input button {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #eef3f8;
+  min-height: 34px;
+  padding: 0 11px;
+}
+
+.desk-toolbar button:hover,
+.box-actions button:hover,
+.terminal-titlebar button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.agent-box,
+.agent-terminal {
+  position: absolute;
+  z-index: 10;
+}
+
+.agent-box {
+  align-items: center;
+  background: rgba(14, 20, 31, 0.9);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.3);
+  color: #eef3f8;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 38px minmax(0, 1fr) 10px;
+  min-height: 70px;
+  padding: 10px;
+  text-align: left;
+  touch-action: none;
+  width: 156px;
+}
+
+.agent-box.is-selected,
+.agent-terminal.is-selected {
+  border-color: rgba(124, 156, 255, 0.7);
+}
+
+.agent-mark {
   align-items: center;
   background: #45c4b0;
   border-radius: 6px;
   color: #08111f;
   display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 13px;
   font-weight: 900;
   height: 38px;
   justify-content: center;
   width: 38px;
 }
 
-.orb-status {
+.agent-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.agent-meta strong {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-meta em {
+  color: #a8b4c3;
+  font-size: 11px;
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-dot {
   border-radius: 50%;
   height: 10px;
   width: 10px;
 }
 
-.orb-status.online {
+.agent-dot.online {
   background: #45c4b0;
 }
 
-.orb-status.offline {
+.agent-dot.offline {
   background: #e875a0;
 }
 
-.agent-console {
-  background: rgba(14, 20, 31, 0.9);
+.box-actions {
+  display: grid;
+  gap: 6px;
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr 1fr;
+}
+
+.box-actions button {
+  font-size: 12px;
+  min-height: 30px;
+  padding: 0 8px;
+}
+
+.agent-terminal {
+  background: rgba(14, 20, 31, 0.92);
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  bottom: 28px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
-  display: flex;
-  flex-direction: column;
-  height: min(620px, calc(100vh - 56px));
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  height: 440px;
   overflow: hidden;
-  position: fixed;
-  right: 28px;
-  width: min(720px, calc(100vw - 56px));
+  touch-action: none;
+  width: min(620px, calc(100vw - 40px));
 }
 
-.console-titlebar {
+.terminal-titlebar {
   align-items: center;
   background: linear-gradient(90deg, rgba(69, 196, 176, 0.18), rgba(124, 156, 255, 0.08));
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   gap: 12px;
-  min-height: 66px;
-  padding: 12px 14px;
+  min-height: 64px;
+  padding: 11px 12px;
 }
 
-.agent-badge,
-.collapse-button {
-  cursor: pointer;
+.terminal-titlebar div {
+  flex: 1;
+  min-width: 0;
 }
 
-.console-titlebar h1 {
-  font-size: 17px;
+.terminal-titlebar h1 {
+  font-size: 16px;
   line-height: 1.1;
   margin: 0;
 }
 
-.console-titlebar p {
+.terminal-titlebar p {
   color: #a8b4c3;
   font-size: 12px;
   margin: 5px 0 0;
-}
-
-.collapse-button {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  color: #eef3f8;
-  height: 30px;
-  margin-left: auto;
-  width: 30px;
-}
-
-.console-body {
-  display: grid;
-  flex: 1;
-  grid-template-rows: 1fr auto;
-  min-height: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .terminal-output {
@@ -166,7 +260,7 @@ a {
   flex-direction: column;
   gap: 8px;
   overflow: auto;
-  padding: 18px;
+  padding: 16px;
 }
 
 .terminal-line {
@@ -175,14 +269,20 @@ a {
   grid-template-columns: 18px 1fr;
 }
 
-.terminal-line span {
-  color: #45c4b0;
+.terminal-line span,
+.terminal-line p,
+.terminal-input span,
+.terminal-input input {
   font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.terminal-line span,
+.terminal-input span {
+  color: #45c4b0;
 }
 
 .terminal-line p {
   color: #dce6ef;
-  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 13px;
   line-height: 1.45;
   margin: 0;
@@ -213,11 +313,6 @@ a {
   padding: 10px 12px;
 }
 
-.terminal-input span {
-  color: #45c4b0;
-  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
-}
-
 .terminal-input input {
   background: transparent;
   color: #eef3f8;
@@ -231,20 +326,11 @@ a {
 
 .terminal-input button {
   background: #7c9cff;
-  border-radius: 8px;
   color: #08111f;
-  cursor: pointer;
   font-weight: 850;
-  min-height: 36px;
-  padding: 0 14px;
 }
 
-.terminal-input button:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-.console-footer {
+.terminal-footer {
   align-items: center;
   background: rgba(255, 255, 255, 0.045);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -253,11 +339,11 @@ a {
   font-size: 12px;
   gap: 12px;
   justify-content: space-between;
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 12px;
 }
 
-.console-footer span {
+.terminal-footer span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -269,15 +355,18 @@ a {
     overflow: auto;
   }
 
-  .agent-console {
-    bottom: 12px;
-    height: calc(100vh - 24px);
-    right: 12px;
-    width: calc(100vw - 24px);
+  .desktop-shell {
+    min-height: 100vh;
   }
 
-  .agent-orb {
-    bottom: 16px;
-    right: 16px;
+  .desk-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+    position: fixed;
+  }
+
+  .agent-terminal {
+    height: 430px;
+    max-width: calc(100vw - 32px);
   }
 }
