@@ -126,7 +126,7 @@ async function executeRun(runId) {
     const sections = [`# ${run.objective}`, "", `Runner: ${run.runner}`, `Started: ${run.createdAt}`, ""];
 
     sections.push("## Workspace");
-    sections.push(await runCommand(run, "git", ["status", "--short", "--branch"]));
+    sections.push(await workspaceSummary());
 
     sections.push("## Files");
     sections.push(await listWorkspaceFiles());
@@ -170,6 +170,23 @@ async function executeRun(runId) {
   } finally {
     run.updatedAt = new Date().toISOString();
     await saveState();
+  }
+}
+
+async function workspaceSummary() {
+  const packageJson = await readOptional(join(root, "package.json"));
+  const readme = await readOptional(join(root, "README.md"));
+  const packageName = packageJson ? JSON.parse(packageJson).name ?? "unknown" : "unknown";
+  const readmeTitle = readme.split("\n").find((line) => line.startsWith("# "))?.replace("# ", "") ?? "No README title";
+
+  return [`- Root: ${root}`, `- Package: ${packageName}`, `- README: ${readmeTitle}`].join("\n");
+}
+
+async function readOptional(path) {
+  try {
+    return await readFile(path, "utf8");
+  } catch {
+    return "";
   }
 }
 

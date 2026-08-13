@@ -301,7 +301,7 @@ export function App() {
       <header className="desk-toolbar">
         <div>
           <strong>AgentDesk</strong>
-          <span>{apiError || "small agent boxes, expandable CLI windows"}</span>
+          <span>{apiError || legacyFailureNotice(appState) || "small agent boxes, expandable CLI windows"}</span>
         </div>
         <button type="button" onClick={addAgent}>
           New Agent
@@ -394,6 +394,14 @@ export function App() {
       )}
     </main>
   );
+}
+
+function legacyFailureNotice(appState: AppState) {
+  const hasLegacySpawnFailure = appState.runs.some(
+    (run) => run.status === "failed" && !run.output?.length && run.events.some((event) => event.message === "spawn EPERM")
+  );
+
+  return hasLegacySpawnFailure ? "old failed runs found; click Clear History after restarting dev:real" : "";
 }
 
 function parseCommand(value: string): { objective: string; runner: string } {
