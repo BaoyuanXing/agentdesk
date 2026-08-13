@@ -233,7 +233,25 @@ export function App() {
 
   async function submitAgentCommand(event: FormEvent<HTMLFormElement>, agent: AgentBox) {
     event.preventDefault();
-    const parsed = parseCommand(agent.command);
+    const typedCommand = agent.command.trim();
+    const blockedReason = unsupportedLiveDataReason(typedCommand);
+
+    if (blockedReason) {
+      setAgents((items) =>
+        items.map((item) =>
+          item.id === agent.id
+            ? {
+                ...item,
+                command: "",
+                lines: [...item.lines, { kind: "user", text: `$ ${typedCommand}` }, { kind: "error", text: blockedReason }]
+              }
+            : item
+        )
+      );
+      return;
+    }
+
+    const parsed = parseCommand(typedCommand);
     if (!parsed.objective) {
       return;
     }
@@ -248,7 +266,7 @@ export function App() {
               ...item,
               command: "",
               sending: true,
-              lines: [...item.lines, { kind: "user", text: `$ ${agent.command}` }, { kind: "agent", text: `starting ${parsed.runner}` }]
+              lines: [...item.lines, { kind: "user", text: `$ ${typedCommand}` }, { kind: "agent", text: `starting ${parsed.runner}` }]
             }
           : item
       )
@@ -419,7 +437,19 @@ function parseCommand(value: string): { objective: string; runner: string } {
     return { runner: "workspace-audit", objective: trimmed.replace("/audit", "").trim() || "Audit this workspace" };
   }
 
-  return { runner: "workspace-audit", objective: trimmed };
+  return { runner: "codex", objective: trimmed };
+}
+
+function unsupportedLiveDataReason(value: string) {
+  const normalized = value.toLowerCase();
+  const asksForMarketData = /\b(stock|share price|market|msft|aapl|nvda|googl|tsla)\b/.test(normalized);
+  const asksForCurrentData = /\b(today|now|current|latest|live)\b/.test(normalized);
+
+  if (asksForMarketData && asksForCurrentData && !normalized.startsWith("/codex")) {
+    return "I should not run a workspace audit for that. This build does not have a market-data/web connector yet, so it cannot answer live stock questions inside AgentDesk.";
+  }
+
+  return "";
 }
 
 function RunOutput({ run }: { run?: AgentRun }) {
