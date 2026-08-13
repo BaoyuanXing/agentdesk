@@ -37,6 +37,12 @@ const server = createServer(async (request, response) => {
       return sendJson(response, run, 201);
     }
 
+    if (request.method === "POST" && url.pathname === "/api/history/clear") {
+      state = { runs: [], artifacts: [] };
+      await saveState();
+      return sendJson(response, await currentState());
+    }
+
     if (request.method === "GET" && url.pathname.startsWith("/api/artifacts/")) {
       return sendArtifact(response, decodeURIComponent(url.pathname.replace("/api/artifacts/", "")));
     }

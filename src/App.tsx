@@ -1,4 +1,4 @@
-import { FormEvent, PointerEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useState } from "react";
 
 type RunStatus = "queued" | "running" | "completed" | "failed";
 type AgentMode = "small" | "expanded";
@@ -94,14 +94,6 @@ export function App() {
   const [appState, setAppState] = useState<AppState>(emptyState);
   const [apiError, setApiError] = useState("");
 
-  const latestRunByObjective = useMemo(() => {
-    const map = new Map<string, AgentRun>();
-    for (const run of appState.runs) {
-      map.set(run.objective, run);
-    }
-    return map;
-  }, [appState.runs]);
-
   useEffect(() => {
     let shouldContinue = true;
 
@@ -166,6 +158,25 @@ export function App() {
           : agent
       )
     );
+  }
+
+  async function clearHistory() {
+    try {
+      const response = await fetch("/api/history/clear", { method: "POST" });
+      if (!response.ok) {
+        throw new Error(`runtime returned ${response.status}`);
+      }
+      const nextState = (await response.json()) as AppState;
+      setAppState(nextState);
+      setAgents((items) =>
+        items.map((agent) => ({
+          ...agent,
+          lines: [...agent.lines, { kind: "system", text: "Run history cleared." }]
+        }))
+      );
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "could not clear history");
+    }
   }
 
   function toggleSelected(id: string) {
@@ -285,7 +296,10 @@ export function App() {
           New Agent
         </button>
         <button type="button" onClick={connectSelected} disabled={selectedIds.length < 2}>
-          Connect Selected
+          Connect {selectedIds.length || ""}
+        </button>
+        <button type="button" onClick={clearHistory} disabled={appState.runs.length === 0 && appState.artifacts.length === 0}>
+          Clear History
         </button>
       </header>
 
@@ -295,15 +309,20 @@ export function App() {
             className={`agent-box ${selectedIds.includes(agent.id) ? "is-selected" : ""}`}
             key={agent.id}
             style={{ left: agent.x, top: agent.y }}
-            onDoubleClick={() => setMode(agent.id, "expanded")}
-            onPointerDown={(event) => startDrag(event, agent)}
           >
-            <span className="agent-mark">{agent.name.replace("Agent ", "A")}</span>
-            <span className="agent-meta">
-              <strong>{agent.name}</strong>
-              <em>{agent.contextId ? `connected ${agent.contextId}` : agent.role}</em>
-            </span>
-            <span className={`agent-dot ${apiError ? "offline" : "online"}`} />
+            <div
+              className="agent-drag-zone"
+              onClick={() => toggleSelected(agent.id)}
+              onDoubleClick={() => setMode(agent.id, "expanded")}
+              onPointerDown={(event) => startDrag(event, agent)}
+            >
+              <span className="agent-mark">{agent.name.replace("Agent ", "A")}</span>
+              <span className="agent-meta">
+                <strong>{agent.name}</strong>
+                <em>{agent.contextId ? `connected ${agent.contextId}` : agent.role}</em>
+              </span>
+              <span className={`agent-dot ${apiError ? "offline" : "online"}`} />
+            </div>
             <span className="box-actions">
               <button type="button" onClick={() => toggleSelected(agent.id)}>
                 {selectedIds.includes(agent.id) ? "Selected" : "Select"}
@@ -318,9 +337,8 @@ export function App() {
             className={`agent-terminal ${selectedIds.includes(agent.id) ? "is-selected" : ""}`}
             key={agent.id}
             style={{ left: agent.x, top: agent.y }}
-            onPointerDown={(event) => startDrag(event, agent)}
           >
-            <header className="terminal-titlebar">
+            <header className="terminal-titlebar" onPointerDown={(event) => startDrag(event, agent)}>
               <span className="agent-mark">{agent.name.replace("Agent ", "A")}</span>
               <div>
                 <h1>{agent.name}</h1>
@@ -341,12 +359,6 @@ export function App() {
                   <p>{line.text}</p>
                 </div>
               ))}
-              {latestRunByObjective.size > 0 && (
-                <div className="terminal-line system">
-                  <span>&gt;</span>
-                  <p>{appState.runs[0]?.status ? `latest run: ${appState.runs[0].runner} ${appState.runs[0].status}` : ""}</p>
-                </div>
-              )}
             </div>
 
             <form className="terminal-input" onSubmit={(event) => submitAgentCommand(event, agent)}>
