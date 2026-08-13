@@ -419,7 +419,7 @@ function legacyFailureNotice(appState: AppState) {
     (run) => run.status === "failed" && !run.output?.length && run.events.some((event) => event.message === "spawn EPERM")
   );
 
-  return hasLegacySpawnFailure ? "old failed runs found; click Clear History after restarting dev:real" : "";
+  return hasLegacySpawnFailure ? "old failed runs found; click Clear History" : "";
 }
 
 function parseCommand(value: string): { objective: string; runner: string } {
@@ -433,10 +433,6 @@ function parseCommand(value: string): { objective: string; runner: string } {
     return { runner: "codex", objective: trimmed.replace("/codex", "").trim() || "Review this repository and suggest next steps" };
   }
 
-  if (trimmed.startsWith("/audit")) {
-    return { runner: "workspace-audit", objective: trimmed.replace("/audit", "").trim() || "Audit this workspace" };
-  }
-
   return { runner: "codex", objective: trimmed };
 }
 
@@ -446,7 +442,7 @@ function unsupportedLiveDataReason(value: string) {
   const asksForCurrentData = /\b(today|now|current|latest|live)\b/.test(normalized);
 
   if (asksForMarketData && asksForCurrentData && !normalized.startsWith("/codex")) {
-    return "I should not run a workspace audit for that. This build does not have a market-data/web connector yet, so it cannot answer live stock questions inside AgentDesk.";
+    return "I cannot look up live stock prices inside AgentDesk yet. I need web access for that.";
   }
 
   return "";
@@ -461,7 +457,7 @@ function RunOutput({ run }: { run?: AgentRun }) {
     <>
       <div className="terminal-line agent">
         <span>&gt;</span>
-        <p>{`${run.runner} ${run.status}`}</p>
+        <p>{`${runnerLabel(run.runner)} ${run.status}`}</p>
       </div>
       {(run.output ?? []).slice(-30).map((chunk, index) => (
         <div className="terminal-line output" key={`${run.id}-output-${index}`}>
@@ -477,6 +473,10 @@ function RunOutput({ run }: { run?: AgentRun }) {
       )}
     </>
   );
+}
+
+function runnerLabel(runner: string) {
+  return runner === "workspace-audit" ? "local scan" : runner;
 }
 
 function getSharedContext(agent: AgentBox, agents: AgentBox[]) {
