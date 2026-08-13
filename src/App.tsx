@@ -13,6 +13,7 @@ type AgentRun = {
   updatedAt: string;
   artifactId?: string;
   events: Array<{ at: string; message: string }>;
+  output?: string[];
 };
 
 type Artifact = {
@@ -44,6 +45,7 @@ type AgentBox = {
   contextId?: string;
   command: string;
   sending: boolean;
+  activeRunId?: string;
   lines: Array<{ kind: LineKind; text: string }>;
 };
 
@@ -187,6 +189,10 @@ export function App() {
     setAgents((items) => items.map((agent) => (agent.id === id ? { ...agent, mode } : agent)));
   }
 
+  function activeRunFor(agent: AgentBox) {
+    return appState.runs.find((run) => run.id === agent.activeRunId);
+  }
+
   function updateCommand(id: string, command: string) {
     setAgents((items) => items.map((agent) => (agent.id === id ? { ...agent, command } : agent)));
   }
@@ -264,7 +270,12 @@ export function App() {
       setAgents((items) =>
         items.map((item) =>
           item.id === agent.id
-            ? { ...item, sending: false, lines: [...item.lines, { kind: "system", text: `run ${run.id} queued` }] }
+            ? {
+                ...item,
+                activeRunId: run.id,
+                sending: false,
+                lines: [...item.lines, { kind: "system", text: `task accepted: ${run.id}` }]
+              }
             : item
         )
       );
@@ -321,7 +332,7 @@ export function App() {
                 <strong>{agent.name}</strong>
                 <em>{agent.contextId ? `connected ${agent.contextId}` : agent.role}</em>
               </span>
-              <span className={`agent-dot ${apiError ? "offline" : "online"}`} />
+              <span className={`agent-dot ${apiError ? "offline" : activeRunFor(agent)?.status === "running" ? "busy" : "online"}`} />
             </div>
             <span className="box-actions">
               <button type="button" onClick={() => toggleSelected(agent.id)}>
@@ -359,6 +370,7 @@ export function App() {
                   <p>{line.text}</p>
                 </div>
               ))}
+              <RunOutput run={activeRunFor(agent)} />
             </div>
 
             <form className="terminal-input" onSubmit={(event) => submitAgentCommand(event, agent)}>
@@ -400,6 +412,33 @@ function parseCommand(value: string): { objective: string; runner: string } {
   }
 
   return { runner: "workspace-audit", objective: trimmed };
+}
+
+function RunOutput({ run }: { run?: AgentRun }) {
+  if (!run) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="terminal-line agent">
+        <span>&gt;</span>
+        <p>{`${run.runner} ${run.status}`}</p>
+      </div>
+      {(run.output ?? []).slice(-30).map((chunk, index) => (
+        <div className="terminal-line output" key={`${run.id}-output-${index}`}>
+          <span>|</span>
+          <pre>{chunk}</pre>
+        </div>
+      ))}
+      {run.artifactId && (
+        <div className="terminal-line system">
+          <span>&gt;</span>
+          <p>artifact ready</p>
+        </div>
+      )}
+    </>
+  );
 }
 
 function getSharedContext(agent: AgentBox, agents: AgentBox[]) {

@@ -46,6 +46,8 @@ Use it like this:
 
 Completed runs create markdown reports in `.agentdesk/artifacts/`, and the console links to the latest artifact.
 
+The current runtime shows a shell-like transcript: the command you typed, the accepted run, live stdout/stderr chunks from the underlying command, final status, and artifact link. It is not yet a full interactive PTY where a spawned program can ask follow-up questions mid-command; that is the next Tauri/runtime step.
+
 ## Scripts
 
 ```bash

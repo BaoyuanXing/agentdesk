@@ -199,6 +199,10 @@ a {
   background: #45c4b0;
 }
 
+.agent-dot.busy {
+  background: #f8b84e;
+}
+
 .agent-dot.offline {
   background: #e875a0;
 }
@@ -278,6 +282,7 @@ a {
 
 .terminal-line span,
 .terminal-line p,
+.terminal-line pre,
 .terminal-input span,
 .terminal-input input {
   font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
@@ -296,6 +301,15 @@ a {
   overflow-wrap: anywhere;
 }
 
+.terminal-line pre {
+  color: #dce6ef;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
 .terminal-line.system p {
   color: #a8b4c3;
 }
@@ -307,6 +321,11 @@ a {
 .terminal-line.error span,
 .terminal-line.error p {
   color: #e875a0;
+}
+
+.terminal-line.output span,
+.terminal-line.output pre {
+  color: #c8d3df;
 }
 
 .terminal-input {

@@ -103,7 +103,8 @@ async function createRun(body) {
     status: "queued",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    events: [{ at: new Date().toISOString(), message: "Queued run" }]
+    events: [{ at: new Date().toISOString(), message: "Queued run" }],
+    output: [`$ agentdesk ${runner} ${objective}`]
   };
 
   state.runs.unshift(run);
@@ -125,19 +126,19 @@ async function executeRun(runId) {
     const sections = [`# ${run.objective}`, "", `Runner: ${run.runner}`, `Started: ${run.createdAt}`, ""];
 
     sections.push("## Workspace");
-    sections.push(await runCommand("git", ["status", "--short", "--branch"]));
+    sections.push(await runCommand(run, "git", ["status", "--short", "--branch"]));
 
     sections.push("## Files");
     sections.push(await listWorkspaceFiles());
 
     if (run.runner === "typecheck") {
       sections.push("## Typecheck");
-      sections.push(await runPnpm(["run", "typecheck"]));
+      sections.push(await runPnpm(run, ["run", "typecheck"]));
     }
 
     if (run.runner === "codex") {
       sections.push("## Codex");
-      sections.push(await runCommand(resolveCodexCommand(), ["exec", run.objective]));
+      sections.push(await runCommand(run, resolveCodexCommand(), ["exec", run.objective]));
     }
 
     sections.push("## Suggested next actions");
@@ -160,9 +161,11 @@ async function executeRun(runId) {
     state.artifacts.unshift(artifact);
     run.status = "completed";
     run.artifactId = artifact.id;
+    appendOutput(run, `\n[agentdesk] completed; artifact: ${filename}`);
     addEvent(run, `Saved artifact ${filename}`);
   } catch (error) {
     run.status = "failed";
+    appendOutput(run, `\n[agentdesk] failed: ${error instanceof Error ? error.message : "Run failed"}`);
     addEvent(run, error instanceof Error ? error.message : "Run failed");
   } finally {
     run.updatedAt = new Date().toISOString();
@@ -174,40 +177,56 @@ function resolveCodexCommand() {
   return process.platform === "win32" ? "codex.cmd" : "codex";
 }
 
-async function runPnpm(args) {
+async function runPnpm(run, args) {
   const isWindows = process.platform === "win32";
   const localPnpm = resolve(root, "node_modules", ".bin", isWindows ? "pnpm.cmd" : "pnpm");
-  return runCommand(existsSync(localPnpm) ? localPnpm : "pnpm", args);
+  return runCommand(run, existsSync(localPnpm) ? localPnpm : "pnpm", args);
 }
 
-async function runCommand(command, args) {
+async function runCommand(run, command, args) {
   return new Promise((resolveOutput) => {
     let output = `$ ${command} ${args.join(" ")}\n`;
+    appendOutput(run, `\n${output}`);
     let child;
 
     try {
       child = spawn(command, args, { cwd: root, shell: false, env: process.env });
     } catch (error) {
-      resolveOutput(`${output}\nCommand failed to start: ${error instanceof Error ? error.message : "Unknown error"}`);
+      const message = `Command failed to start: ${error instanceof Error ? error.message : "Unknown error"}`;
+      appendOutput(run, message);
+      resolveOutput(`${output}\n${message}`);
       return;
     }
 
     child.stdout.on("data", (chunk) => {
-      output += chunk.toString();
+      const text = chunk.toString();
+      output += text;
+      appendOutput(run, text);
     });
 
     child.stderr.on("data", (chunk) => {
-      output += chunk.toString();
+      const text = chunk.toString();
+      output += text;
+      appendOutput(run, text);
     });
 
     child.on("error", (error) => {
-      resolveOutput(`${output}\nCommand failed to start: ${error.message}`);
+      const message = `Command failed to start: ${error.message}`;
+      appendOutput(run, message);
+      resolveOutput(`${output}\n${message}`);
     });
 
     child.on("close", (code) => {
+      appendOutput(run, `\nExit code: ${code}`);
       resolveOutput(`${output}\nExit code: ${code}`);
     });
   });
+}
+
+function appendOutput(run, text) {
+  run.output = [...(run.output ?? []), text].slice(-160);
+  run.updatedAt = new Date().toISOString();
+  void saveState();
 }
 
 async function listWorkspaceFiles() {
